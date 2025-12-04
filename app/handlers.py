@@ -1,12 +1,34 @@
 import uuid
 from starlette import status
-from fastapi import APIRouter, Depends, Body, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+import os
 from forms import UserForm, UserCreateForm
 from models import connect_db, User, AuthToken
 from utils import get_password_hash
 from auth import check_auth_token
 
 router = APIRouter()
+
+# Настройка шаблонов
+templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
+templates = Jinja2Templates(directory=templates_dir)
+
+
+@router.get("/", response_class=HTMLResponse)
+async def get_home(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def get_login_page(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+
+@router.get("/register", response_class=HTMLResponse)
+async def get_register_page(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
 
 
 @router.post('/login')

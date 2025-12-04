@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <div id="error-message" style="color: red; display: none;"></div>
+    <div id="success-message" style="color: green; display: none;"></div>
+
+    <form id="login-form">
+        <div>
+            <label>Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+            <label>Password:</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">Login</button>
+    </form>
+
+    <p><a href="/register">Register</a></p>
+
+    <script>
+        document.getElementById('login-form').onsubmit = async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('error-message').style.display = 'none';
+                    document.getElementById('success-message').style.display = 'block';
+                    document.getElementById('success-message').textContent = 'Login successful! Token: ' + data.token;
+                    localStorage.setItem('auth_token', data.token);
+                } else {
+                    document.getElementById('success-message').style.display = 'none';
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('error-message').textContent = data.error || 'Login failed';
+                }
+            } catch (error) {
+                document.getElementById('error-message').style.display = 'block';
+                document.getElementById('error-message').textContent = 'Network error';
+            }
+        };
+    </script>
+</body>
+</html>
