@@ -12,5 +12,5 @@ setup(
         'pytest==6.2.5',
         'requests==2.26.0',
     ],
-    scripts=['app/main.py', 'scripts/create_db.py']
+    scripts=['app/main.py', 'app/create_db.py']
 )

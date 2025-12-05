@@ -8,13 +8,8 @@ from config import STATIC_DIR
 
 def get_app() -> FastAPI:
     application = FastAPI()
-
-    # Подключаем статические файлы К ПРИЛОЖЕНИЮ
     application.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-    # Подключаем роутер
     application.include_router(router)
-
     return application
 
 
