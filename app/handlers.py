@@ -1,9 +1,8 @@
 import uuid
 from starlette import status
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-import os
 from forms import UserForm, UserCreateForm
 from models import connect_db, User, AuthToken
 from utils import get_password_hash
@@ -11,14 +10,17 @@ from auth import check_auth_token
 
 router = APIRouter()
 
+# Импортируем настройки из config
+from config import TEMPLATES_DIR, STATIC_DIR
+
 # Настройка шаблонов
-templates_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "templates")
-templates = Jinja2Templates(directory=templates_dir)
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
+# HTML страницы
 @router.get("/", response_class=HTMLResponse)
 async def get_home(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -29,6 +31,11 @@ async def get_login_page(request: Request):
 @router.get("/register", response_class=HTMLResponse)
 async def get_register_page(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
+
+
+@router.get("/dashboard", response_class=HTMLResponse)
+async def get_dashboard_page(request: Request):
+    return templates.TemplateResponse("dashboard.html", {"request": request})
 
 
 @router.post('/login')
@@ -68,3 +75,18 @@ def get_user(auth_token: AuthToken = Depends(check_auth_token), database=Depends
     if not user:
         raise HTTPException(status_code=404, detail='User not found')
     return {'id': user.id, 'email': user.email, 'nick_name': user.nick_name}
+
+
+@router.post('/logout', name='user:logout')
+def logout(
+        authorization: str = Header(None),
+        database=Depends(connect_db)
+):
+    if authorization and authorization.startswith('Bearer '):
+        token = authorization.replace('Bearer ', '')
+        auth_token = database.query(AuthToken).filter(AuthToken.token == token).first()
+        if auth_token:
+            database.delete(auth_token)
+            database.commit()
+
+    return {'message': 'Logged out successfully'}

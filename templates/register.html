@@ -34,46 +34,6 @@
 
     <p><a href="/login">Login</a></p>
 
-    <script>
-        document.getElementById('register-form').onsubmit = async function(e) {
-            e.preventDefault();
-
-            const formData = {
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value,
-                first_name: document.getElementById('first_name').value || null,
-                last_name: document.getElementById('last_name').value || null,
-                nick_name: document.getElementById('nick_name').value || null
-            };
-
-            try {
-                const response = await fetch('/user', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('error-message').style.display = 'none';
-                    document.getElementById('success-message').style.display = 'block';
-                    document.getElementById('success-message').textContent = 'Registration successful! User ID: ' + data.user_id;
-                    document.getElementById('register-form').reset();
-
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 2000);
-                } else {
-                    const errorData = await response.json();
-                    document.getElementById('success-message').style.display = 'none';
-                    document.getElementById('error-message').style.display = 'block';
-                    document.getElementById('error-message').textContent = errorData.detail || 'Registration failed';
-                }
-            } catch (error) {
-                document.getElementById('error-message').style.display = 'block';
-                document.getElementById('error-message').textContent = 'Network error';
-            }
-        };
-    </script>
+    <script src="../static/js/register.js"></script>
 </body>
 </html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+</head>
+<body>
+    <h2>User Dashboard</h2>
+
+    <div id="user-info">
+        <p>Loading user information...</p>
+    </div>
+
+    <div id="error-message" style="color: red; display: none;"></div>
+
+    <div>
+        <h3>Actions:</h3>
+        <button onclick="logout()">Logout</button>
+        <button onclick="refreshUserInfo()">Refresh</button>
+    </div>
+
+    <div>
+        <h3>Token:</h3>
+        <pre id="token-info">No token found</pre>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
