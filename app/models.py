@@ -1,69 +1,36 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, text
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session
 from datetime import datetime
-from enum import Enum
+import secrets
 
 from config import DATABASE_URL, DB_TYPE
 
 Base = declarative_base()
 
 
-class StreamStatus(Enum):
-    PLANED = 'planed'
-    ACTIVE = 'active'
-    CLOSED = 'closed'
-
-
 def connect_db():
-    """Подключение к БД с автоматическим созданием базы если нужно"""
-    if DB_TYPE == 'mysql':
-        create_mysql_database_if_not_exists()
-
-    if DB_TYPE == 'sqlite':
-        engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-    else:
-        engine = create_engine(DATABASE_URL)
-
+    """Подключение к БД"""
+    engine = create_engine(DATABASE_URL)
     session = Session(bind=engine.connect())
     return session
 
 
-def create_mysql_database_if_not_exists():
-    """Создать базу данных MySQL если она не существует"""
-    try:
-        from urllib.parse import urlparse
-
-        parsed = urlparse(DATABASE_URL)
-        db_name = parsed.path[1:]  # убираем первый слэш
-
-        base_url = DATABASE_URL.replace(f'/{db_name}', '')
-
-        temp_engine = create_engine(base_url)
-
-        with temp_engine.connect() as conn:
-            result = conn.execute(text(f"SHOW DATABASES LIKE '{db_name}'"))
-            exists = result.fetchone() is not None
-
-            if not exists:
-                print(f"Creating MySQL database: {db_name}")
-                conn.execute(text(f"CREATE DATABASE {db_name} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"))
-                print(f"Database '{db_name}' created")
-            else:
-                print(f"Database '{db_name}' already exists")
-
-    except Exception as e:
-        print(f"Could not check/create database: {e}")
-
-
 def create_tables():
-    if DB_TYPE == 'sqlite':
-        engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-    else:
-        engine = create_engine(DATABASE_URL)
-
+    """Создание таблиц"""
+    engine = create_engine(DATABASE_URL)
     Base.metadata.create_all(bind=engine)
     print(f"Tables created for {DB_TYPE}")
+
+
+def create_database_if_not_exists():
+    """Создать базу данных если нужно (для PostgreSQL обычно уже создана)"""
+    try:
+        engine = create_engine(DATABASE_URL)
+        Base.metadata.create_all(bind=engine)
+        print("Database tables ready")
+    except Exception as e:
+        print(f"Database error: {e}")
 
 
 class User(Base):
@@ -78,14 +45,15 @@ class User(Base):
     created_at = Column(String(256), default=datetime.utcnow().isoformat())
 
 
-class Stream(Base):
-    __tablename__ = 'stream'
+class Item(Base):
+    __tablename__ = 'items'
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey('users_app.id'))
-    title = Column(String(256))
-    topic = Column(String(256))
-    status = Column(String(50), default=StreamStatus.PLANED.value)
+    title = Column(String(256), nullable=False)
+    description = Column(Text)
+    cover_image = Column(String(512))  # URL или путь к титульной картинке
+    images = Column(Text)  # JSON список картинок
     created_at = Column(String(256), default=datetime.utcnow().isoformat())
 
 
@@ -93,6 +61,11 @@ class AuthToken(Base):
     __tablename__ = 'auth_token'
 
     id = Column(Integer, primary_key=True)
-    token = Column(String(256), nullable=False)
+    token = Column(String(64), nullable=False, unique=True)  # Укороченный токен
     user_id = Column(Integer, ForeignKey('users_app.id'))
     created_at = Column(String(256), default=datetime.utcnow().isoformat())
+
+    @staticmethod
+    def generate_token():
+        """Генерация простого токена"""
+        return secrets.token_urlsafe(32)  # 32 байта в URL-safe формате
