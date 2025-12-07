@@ -4,12 +4,12 @@ import os
 from fastapi.staticfiles import StaticFiles
 from handlers import router
 from config import STATIC_DIR
-from models import create_database_if_not_exists
+from models import create_tables
 
 
 def get_app() -> FastAPI:
     application = FastAPI(title="Item Gallery API")
-    create_database_if_not_exists()
+    create_tables()
     application.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     application.include_router(router)
     return application

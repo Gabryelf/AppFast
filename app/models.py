@@ -1,36 +1,31 @@
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text, text
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import secrets
+import json
 
-from config import DATABASE_URL, DB_TYPE
+from config import DATABASE_URL
 
+engine = create_engine(DATABASE_URL)
 Base = declarative_base()
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def connect_db():
-    """Подключение к БД"""
-    engine = create_engine(DATABASE_URL)
-    session = Session(bind=engine.connect())
-    return session
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def create_tables():
-    """Создание таблиц"""
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(bind=engine)
-    print(f"Tables created for {DB_TYPE}")
-
-
-def create_database_if_not_exists():
-    """Создать базу данных если нужно (для PostgreSQL обычно уже создана)"""
     try:
-        engine = create_engine(DATABASE_URL)
         Base.metadata.create_all(bind=engine)
-        print("Database tables ready")
+        print("Database tables created successfully")
     except Exception as e:
-        print(f"Database error: {e}")
+        print(f"Error creating tables: {e}")
 
 
 class User(Base):
@@ -52,20 +47,29 @@ class Item(Base):
     user_id = Column(Integer, ForeignKey('users_app.id'))
     title = Column(String(256), nullable=False)
     description = Column(Text)
-    cover_image = Column(String(512))  # URL или путь к титульной картинке
-    images = Column(Text)  # JSON список картинок
+    cover_image = Column(String(512))
+    images = Column(Text, default='[]')  # JSON список
     created_at = Column(String(256), default=datetime.utcnow().isoformat())
+
+    def get_images_list(self):
+        """Получить список изображений"""
+        if self.images:
+            try:
+                return json.loads(self.images)
+            except:
+                return []
+        return []
 
 
 class AuthToken(Base):
     __tablename__ = 'auth_token'
 
     id = Column(Integer, primary_key=True)
-    token = Column(String(64), nullable=False, unique=True)  # Укороченный токен
+    token = Column(String(64), nullable=False, unique=True)
     user_id = Column(Integer, ForeignKey('users_app.id'))
     created_at = Column(String(256), default=datetime.utcnow().isoformat())
 
     @staticmethod
     def generate_token():
-        """Генерация простого токена"""
-        return secrets.token_urlsafe(32)  # 32 байта в URL-safe формате
+        """Генерация токена"""
+        return secrets.token_urlsafe(32)
