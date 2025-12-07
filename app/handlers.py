@@ -1,6 +1,6 @@
 import json
 from fastapi import APIRouter, Depends, HTTPException, Request, Header
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
 from forms import UserForm, UserCreateForm, ItemCreateForm, ItemUpdateForm

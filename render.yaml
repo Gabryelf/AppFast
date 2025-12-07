@@ -2,17 +2,13 @@ services:
   - type: web
     name: fastapi-app
     env: python
+    region: frankfurt
+    plan: free
+    pythonVersion: "3.11.9"
     buildCommand: |
+      pip install --upgrade pip
       pip install -r requirements.txt
-      python recreate_db.py
-    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: fastapi-db
-          property: connectionString
-
-databases:
-  - name: fastapi-db
-    databaseName: fastapi_db
-    user: fastapi_user
+        sync: false

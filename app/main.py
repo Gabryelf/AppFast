@@ -1,10 +1,13 @@
 from fastapi import FastAPI
 import uvicorn
 import os
+import sys
 from fastapi.staticfiles import StaticFiles
 from handlers import router
 from config import STATIC_DIR
 from models import create_tables
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
 def get_app() -> FastAPI:
