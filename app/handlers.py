@@ -3,10 +3,10 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from forms import UserForm, UserCreateForm, ItemCreateForm, ItemUpdateForm
-from models import connect_db, User, AuthToken, Item
-from utils import get_password_hash
-from auth import check_auth_token
+from app.forms import UserForm, UserCreateForm, ItemCreateForm, ItemUpdateForm
+from app.models import connect_db, User, AuthToken, Item
+from app.utils import get_password_hash
+from app.auth import check_auth_token
 
 from config import TEMPLATES_DIR
 

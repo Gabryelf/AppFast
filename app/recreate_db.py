@@ -1,6 +1,6 @@
 import sys
 from sqlalchemy import create_engine, text
-from models import Base, DATABASE_URL
+from app.models import Base, DATABASE_URL
 
 
 def recreate_database():

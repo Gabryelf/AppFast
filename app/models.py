@@ -5,7 +5,7 @@ from datetime import datetime
 import secrets
 import json
 
-from config import DATABASE_URL
+from app.config import DATABASE_URL
 
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
