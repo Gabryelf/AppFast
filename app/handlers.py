@@ -8,7 +8,7 @@ from app.models import connect_db, User, AuthToken, Item
 from app.utils import get_password_hash
 from app.auth import check_auth_token
 
-from config import TEMPLATES_DIR
+from app.config import TEMPLATES_DIR
 
 router = APIRouter()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
