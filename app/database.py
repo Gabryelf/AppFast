@@ -3,20 +3,26 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from datetime import datetime
 import secrets
+import json
+import os
 
 from app.config import settings
 
+# Создаем engine с параметрами по умолчанию
 Base = declarative_base()
 engine = None
 SessionLocal = None
 
 
-def setup_database():
-    """Настройка подключения к базе данных"""
+def init_database():
+    """Инициализация подключения к базе данных"""
     global engine, SessionLocal
 
     if engine is None:
         try:
+            print(f"🔗 Connecting to database...")
+            print(f"   URL: {settings.DATABASE_URL[:50]}...")
+
             engine = create_engine(
                 settings.DATABASE_URL,
                 echo=settings.DEBUG,
@@ -27,12 +33,13 @@ def setup_database():
             SessionLocal = sessionmaker(
                 autocommit=False,
                 autoflush=False,
-                bind=engine
+                bind=engine,
+                expire_on_commit=False
             )
 
             return True
         except Exception as e:
-            print(f"❌ Failed to setup database: {e}")
+            print(f"❌ Failed to connect to database: {e}")
             return False
 
     return True
@@ -41,25 +48,28 @@ def setup_database():
 def get_db() -> Session:
     """Dependency для получения сессии базы данных"""
     if SessionLocal is None:
-        setup_database()
+        init_database()
 
-    db = Session()
+    db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
 
-def init_db():
-    if not setup_database():
-        print("Skipping table creation due to connection issues")
-        return
+def create_tables():
+    """Создание таблиц в базе данных"""
+    if not init_database():
+        print("⚠️ Skipping table creation due to connection issues")
+        return False
 
     try:
         Base.metadata.create_all(bind=engine)
-        print("Database tables created successfully")
+        print("✅ Database tables created successfully")
+        return True
     except Exception as e:
-        print(f"Error creating tables: {e}")
+        print(f"❌ Error creating tables: {e}")
+        return False
 
 
 class User(Base):
@@ -96,4 +106,5 @@ class AuthToken(Base):
 
     @staticmethod
     def generate_token() -> str:
+        """Генерация нового токена"""
         return secrets.token_urlsafe(32)

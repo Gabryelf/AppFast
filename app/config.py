@@ -1,24 +1,40 @@
-from pydantic_settings import BaseSettings
 import os
+from typing import Optional
 
 
-class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/item_gallery"
+class Settings:
+    """Настройки приложения"""
 
-    BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    STATIC_DIR: str = os.path.join(BASE_DIR, "static")
-    TEMPLATES_DIR: str = os.path.join(BASE_DIR, "templates")
+    def __init__(self):
+        # База данных
+        self.DATABASE_URL = self._get_database_url()
 
-    DEBUG: bool = True
+        # Пути
+        self.BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.STATIC_DIR = os.path.join(self.BASE_DIR, "static")
+        self.TEMPLATES_DIR = os.path.join(self.BASE_DIR, "templates")
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+        # Настройки приложения
+        self.DEBUG = os.getenv("DEBUG", "True").lower() == "true"
+
+    def _get_database_url(self) -> str:
+        """Получение URL базы данных"""
+        # 1. Проверяем переменную окружения Render
+        db_url = os.getenv("DATABASE_URL")
+
+        # 2. Если нет - используем локальную базу по умолчанию
+        if not db_url:
+            db_url = "postgresql://postgres:password@localhost:5432/item_gallery"
+            print("⚠️ Using default local database URL")
+        else:
+            print(f"✅ Using database URL from environment")
+
+        # Исправляем URL для совместимости
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+        return db_url
 
 
+# Создаем экземпляр настроек
 settings = Settings()
-
-if settings.DATABASE_URL.startswith("postgres://"):
-    settings.DATABASE_URL = settings.DATABASE_URL.replace(
-        "postgres://", "postgresql://", 1
-    )
