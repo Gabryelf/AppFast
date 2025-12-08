@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.routers import api_router, pages_router
 from app.config import settings
-from app.database import init_db
+from app.database import init_database
 
 app = FastAPI(
     title="Item Gallery API",
