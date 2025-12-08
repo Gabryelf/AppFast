@@ -9,7 +9,7 @@ from app.database import get_db, User, Item, AuthToken
 from app.auth import authenticate_user, create_auth_token, get_current_user
 from app.utils import format_images, get_password_hash
 
-router = APIRouter()
+router = APIRouter(tags=["API"])
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -27,34 +27,47 @@ async def login(user_data: UserLogin, db: Session = Depends(get_db)):
 @router.post("/register", response_model=TokenResponse)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     """Регистрация нового пользователя"""
-    # Проверяем, существует ли пользователь
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Пользователь с таким email уже существует"
+    print(f"🔍 Attempting to register user: {user_data.email}")
+
+    try:
+        # Проверяем, существует ли пользователь
+        existing_user = db.query(User).filter(User.email == user_data.email).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Пользователь с таким email уже существует"
+            )
+
+        # Создаем нового пользователя
+        user = User(
+            email=user_data.email,
+            password=get_password_hash(user_data.password),
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
+            nick_name=user_data.nick_name
         )
 
-    # Создаем нового пользователя
-    user = User(
-        email=user_data.email,
-        password=get_password_hash(user_data.password),
-        first_name=user_data.first_name,
-        last_name=user_data.last_name,
-        nick_name=user_data.nick_name
-    )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+        print(f"✅ User created with ID: {user.id}")
 
-    # Создаем токен
-    token = create_auth_token(user.id, db)
+        # Создаем токен
+        token = create_auth_token(user.id, db)
 
-    return TokenResponse(
-        message="Пользователь успешно создан",
-        token=token
-    )
+        return TokenResponse(
+            message="Пользователь успешно создан",
+            token=token
+        )
+
+    except Exception as e:
+        print(f"❌ Error in register: {e}")
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Ошибка при регистрации: {str(e)}"
+        )
 
 
 @router.get("/user", response_model=UserResponse)
@@ -102,13 +115,22 @@ async def create_item(
     db.commit()
     db.refresh(item)
 
+    # Получаем список изображений
+    images_list = []
+    if item.images:
+        import json
+        try:
+            images_list = json.loads(item.images)
+        except:
+            images_list = []
+
     return ItemResponse(
         id=item.id,
         user_id=item.user_id,
         title=item.title,
         description=item.description,
         cover_image=item.cover_image,
-        images=item.images_list if hasattr(item, 'images_list') else [],
+        images=images_list,
         created_at=item.created_at
     )
 
@@ -124,13 +146,21 @@ async def list_items(
 
     items_list = []
     for item in items:
+        images_list = []
+        if item.images:
+            import json
+            try:
+                images_list = json.loads(item.images)
+            except:
+                images_list = []
+
         items_list.append(ItemResponse(
             id=item.id,
             user_id=item.user_id,
             title=item.title,
             description=item.description,
             cover_image=item.cover_image,
-            images=item.images_list if hasattr(item, 'images_list') else [],
+            images=images_list,
             created_at=item.created_at
         ))
 
@@ -153,13 +183,21 @@ async def my_items(
 
     items_list = []
     for item in items:
+        images_list = []
+        if item.images:
+            import json
+            try:
+                images_list = json.loads(item.images)
+            except:
+                images_list = []
+
         items_list.append(ItemResponse(
             id=item.id,
             user_id=item.user_id,
             title=item.title,
             description=item.description,
             cover_image=item.cover_image,
-            images=item.images_list if hasattr(item, 'images_list') else [],
+            images=images_list,
             created_at=item.created_at
         ))
 
@@ -181,13 +219,21 @@ async def get_item(item_id: int, db: Session = Depends(get_db)):
             detail="Предмет не найден"
         )
 
+    images_list = []
+    if item.images:
+        import json
+        try:
+            images_list = json.loads(item.images)
+        except:
+            images_list = []
+
     return ItemResponse(
         id=item.id,
         user_id=item.user_id,
         title=item.title,
         description=item.description,
         cover_image=item.cover_image,
-        images=item.images_list if hasattr(item, 'images_list') else [],
+        images=images_list,
         created_at=item.created_at
     )
 
@@ -224,13 +270,21 @@ async def update_item(
     db.commit()
     db.refresh(item)
 
+    images_list = []
+    if item.images:
+        import json
+        try:
+            images_list = json.loads(item.images)
+        except:
+            images_list = []
+
     return ItemResponse(
         id=item.id,
         user_id=item.user_id,
         title=item.title,
         description=item.description,
         cover_image=item.cover_image,
-        images=item.images_list if hasattr(item, 'images_list') else [],
+        images=images_list,
         created_at=item.created_at
     )
 
