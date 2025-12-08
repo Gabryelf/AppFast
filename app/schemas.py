@@ -20,13 +20,10 @@ class UserCreate(UserLogin):
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
-    nick_name: Optional[str]
     first_name: Optional[str]
     last_name: Optional[str]
+    nick_name: Optional[str]
     created_at: str
-
-    class Config:
-        from_attributes = True
 
 
 class TokenResponse(BaseResponse):
@@ -52,7 +49,6 @@ class ItemResponse(ItemBase):
     id: int
     user_id: int
     created_at: str
-    author: Optional[UserResponse] = None
 
     class Config:
         from_attributes = True

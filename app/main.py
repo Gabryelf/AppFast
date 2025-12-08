@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 import os
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.routers import api_router, pages_router
 from app.config import settings
@@ -13,7 +16,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(f"Warning: {e}")
 
 app.mount("/static", StaticFiles(directory=settings.STATIC_DIR), name="static")
 

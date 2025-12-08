@@ -1,19 +1,49 @@
 from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session, relationship
+from sqlalchemy.orm import sessionmaker, Session
 from datetime import datetime
 import secrets
-import json
 
 from app.config import settings
 
-engine = create_engine(settings.DATABASE_URL, echo=settings.DEBUG)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+engine = None
+SessionLocal = None
+
+
+def setup_database():
+    """Настройка подключения к базе данных"""
+    global engine, SessionLocal
+
+    if engine is None:
+        try:
+            engine = create_engine(
+                settings.DATABASE_URL,
+                echo=settings.DEBUG,
+                pool_pre_ping=True,
+                pool_recycle=300
+            )
+
+            SessionLocal = sessionmaker(
+                autocommit=False,
+                autoflush=False,
+                bind=engine
+            )
+
+            return True
+        except Exception as e:
+            print(f"❌ Failed to setup database: {e}")
+            return False
+
+    return True
 
 
 def get_db() -> Session:
-    db = SessionLocal()
+    """Dependency для получения сессии базы данных"""
+    if SessionLocal is None:
+        setup_database()
+
+    db = Session()
     try:
         yield db
     finally:
@@ -21,8 +51,15 @@ def get_db() -> Session:
 
 
 def init_db():
-    Base.metadata.create_all(bind=engine)
-    print("Database tables created successfully")
+    if not setup_database():
+        print("Skipping table creation due to connection issues")
+        return
+
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("Database tables created successfully")
+    except Exception as e:
+        print(f"Error creating tables: {e}")
 
 
 class User(Base):
@@ -36,9 +73,6 @@ class User(Base):
     nick_name = Column(String(100))
     created_at = Column(String, default=lambda: datetime.utcnow().isoformat())
 
-    items = relationship("Item", back_populates="author", cascade="all, delete-orphan")
-    tokens = relationship("AuthToken", back_populates="user", cascade="all, delete-orphan")
-
 
 class Item(Base):
     __tablename__ = "items"
@@ -51,16 +85,6 @@ class Item(Base):
     images = Column(Text, default="[]")
     created_at = Column(String, default=lambda: datetime.utcnow().isoformat())
 
-    author = relationship("User", back_populates="items")
-
-    @property
-    def images_list(self) -> list:
-        """Получить список изображений как Python список"""
-        try:
-            return json.loads(self.images) if self.images else []
-        except json.JSONDecodeError:
-            return []
-
 
 class AuthToken(Base):
     __tablename__ = "auth_token"
@@ -70,9 +94,6 @@ class AuthToken(Base):
     user_id = Column(Integer, ForeignKey("users_app.id"), nullable=False)
     created_at = Column(String, default=lambda: datetime.utcnow().isoformat())
 
-    user = relationship("User", back_populates="tokens")
-
     @staticmethod
     def generate_token() -> str:
-        """Генерация нового токена"""
         return secrets.token_urlsafe(32)

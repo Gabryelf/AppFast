@@ -1,26 +1,33 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
 
 from app.schemas import (
     UserLogin, UserCreate, UserResponse, TokenResponse,
     ItemCreate, ItemUpdate, ItemResponse, ItemsListResponse
 )
-from app.database import Session, get_db, User, Item, AuthToken
+from app.database import get_db, User, Item, AuthToken
 from app.auth import authenticate_user, create_auth_token, get_current_user
-from app.utils import format_images
+from app.utils import format_images, get_password_hash
 
-router = APIRouter(tags=["API"])
+router = APIRouter()
 
 
 @router.post("/login", response_model=TokenResponse)
 async def login(user_data: UserLogin, db: Session = Depends(get_db)):
+    """Вход в систему"""
     user = authenticate_user(user_data.email, user_data.password, db)
     token = create_auth_token(user.id, db)
 
-    return TokenResponse(message="Успешный вход", token=token)
+    return TokenResponse(
+        message="Успешный вход в систему",
+        token=token
+    )
 
 
 @router.post("/register", response_model=TokenResponse)
 async def register(user_data: UserCreate, db: Session = Depends(get_db)):
+    """Регистрация нового пользователя"""
+    # Проверяем, существует ли пользователь
     existing_user = db.query(User).filter(User.email == user_data.email).first()
     if existing_user:
         raise HTTPException(
@@ -28,8 +35,7 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
             detail="Пользователь с таким email уже существует"
         )
 
-    from app.utils import get_password_hash
-
+    # Создаем нового пользователя
     user = User(
         email=user_data.email,
         password=get_password_hash(user_data.password),
@@ -42,21 +48,34 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
 
+    # Создаем токен
     token = create_auth_token(user.id, db)
 
-    return TokenResponse(message="Пользователь создан", token=token)
+    return TokenResponse(
+        message="Пользователь успешно создан",
+        token=token
+    )
 
 
 @router.get("/user", response_model=UserResponse)
 async def get_user(user: User = Depends(get_current_user)):
-    return user
+    """Получение информации о текущем пользователе"""
+    return UserResponse(
+        id=user.id,
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        nick_name=user.nick_name,
+        created_at=user.created_at
+    )
 
 
-@router.post("/logout", response_model=dict)
+@router.post("/logout")
 async def logout(
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
+    """Выход из системы"""
     db.query(AuthToken).filter(AuthToken.user_id == current_user.id).delete()
     db.commit()
 
@@ -70,6 +89,7 @@ async def create_item(
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
+    """Создание нового предмета"""
     item = Item(
         user_id=current_user.id,
         title=item_data.title,
@@ -82,7 +102,15 @@ async def create_item(
     db.commit()
     db.refresh(item)
 
-    return item
+    return ItemResponse(
+        id=item.id,
+        user_id=item.user_id,
+        title=item.title,
+        description=item.description,
+        cover_image=item.cover_image,
+        images=item.images_list if hasattr(item, 'images_list') else [],
+        created_at=item.created_at
+    )
 
 
 @router.get("/items", response_model=ItemsListResponse)
@@ -91,11 +119,24 @@ async def list_items(
         limit: int = 50,
         db: Session = Depends(get_db)
 ):
+    """Получение списка предметов"""
     items = db.query(Item).order_by(Item.created_at.desc()).offset(skip).limit(limit).all()
 
+    items_list = []
+    for item in items:
+        items_list.append(ItemResponse(
+            id=item.id,
+            user_id=item.user_id,
+            title=item.title,
+            description=item.description,
+            cover_image=item.cover_image,
+            images=item.images_list if hasattr(item, 'images_list') else [],
+            created_at=item.created_at
+        ))
+
     return ItemsListResponse(
-        items=items,
-        count=len(items),
+        items=items_list,
+        count=len(items_list),
         message="Список предметов"
     )
 
@@ -105,12 +146,33 @@ async def my_items(
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
-    items = db.query(Item).filter(Item.user_id == current_user.id).order_by(Item.created_at.desc()).all()
-    return ItemsListResponse(items=items, count=len(items), message="Мои предметы")
+    """Получение предметов текущего пользователя"""
+    items = db.query(Item).filter(
+        Item.user_id == current_user.id
+    ).order_by(Item.created_at.desc()).all()
+
+    items_list = []
+    for item in items:
+        items_list.append(ItemResponse(
+            id=item.id,
+            user_id=item.user_id,
+            title=item.title,
+            description=item.description,
+            cover_image=item.cover_image,
+            images=item.images_list if hasattr(item, 'images_list') else [],
+            created_at=item.created_at
+        ))
+
+    return ItemsListResponse(
+        items=items_list,
+        count=len(items_list),
+        message="Мои предметы"
+    )
 
 
 @router.get("/items/{item_id}", response_model=ItemResponse)
 async def get_item(item_id: int, db: Session = Depends(get_db)):
+    """Получение предмета по ID"""
     item = db.query(Item).filter(Item.id == item_id).first()
 
     if not item:
@@ -119,7 +181,15 @@ async def get_item(item_id: int, db: Session = Depends(get_db)):
             detail="Предмет не найден"
         )
 
-    return item
+    return ItemResponse(
+        id=item.id,
+        user_id=item.user_id,
+        title=item.title,
+        description=item.description,
+        cover_image=item.cover_image,
+        images=item.images_list if hasattr(item, 'images_list') else [],
+        created_at=item.created_at
+    )
 
 
 @router.put("/items/{item_id}", response_model=ItemResponse)
@@ -141,21 +211,28 @@ async def update_item(
             detail="Предмет не найден или нет доступа"
         )
 
-    update_data = item_data.dict(exclude_unset=True)
-
-    if "title" in update_data:
-        item.title = update_data["title"]
-    if "description" in update_data:
-        item.description = update_data["description"]
-    if "cover_image" in update_data:
-        item.cover_image = update_data["cover_image"]
-    if "images" in update_data and update_data["images"] is not None:
-        item.images = format_images(update_data["images"])
+    # Обновляем поля
+    if item_data.title is not None:
+        item.title = item_data.title
+    if item_data.description is not None:
+        item.description = item_data.description
+    if item_data.cover_image is not None:
+        item.cover_image = item_data.cover_image
+    if item_data.images is not None:
+        item.images = format_images(item_data.images)
 
     db.commit()
     db.refresh(item)
 
-    return item
+    return ItemResponse(
+        id=item.id,
+        user_id=item.user_id,
+        title=item.title,
+        description=item.description,
+        cover_image=item.cover_image,
+        images=item.images_list if hasattr(item, 'images_list') else [],
+        created_at=item.created_at
+    )
 
 
 @router.delete("/items/{item_id}")
@@ -164,6 +241,7 @@ async def delete_item(
         current_user: User = Depends(get_current_user),
         db: Session = Depends(get_db)
 ):
+    """Удаление предмета"""
     item = db.query(Item).filter(
         Item.id == item_id,
         Item.user_id == current_user.id
