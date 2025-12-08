@@ -1,18 +1,24 @@
+from pydantic_settings import BaseSettings
 import os
-from dotenv import load_dotenv
 
-load_dotenv()
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-DATABASE_URL = os.getenv('DATABASE_URL')
+class Settings(BaseSettings):
+    DATABASE_URL: str = "postgresql://postgres:password@localhost:5432/item_gallery"
 
-if not DATABASE_URL:
-    DATABASE_URL = 'postgresql://postgres:password@localhost:5432/item_gallery'
+    BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    STATIC_DIR: str = os.path.join(BASE_DIR, "static")
+    TEMPLATES_DIR: str = os.path.join(BASE_DIR, "templates")
 
-if DATABASE_URL.startswith('postgres://'):
-    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+    DEBUG: bool = True
 
-STATIC_DIR = os.path.join(BASE_DIR, 'static')
-TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
+    class Config:
+        env_file = ".env"
+        case_sensitive = False
 
-print(f"📊 Database URL: {DATABASE_URL[:50]}...")
+
+settings = Settings()
+
+if settings.DATABASE_URL.startswith("postgres://"):
+    settings.DATABASE_URL = settings.DATABASE_URL.replace(
+        "postgres://", "postgresql://", 1
+    )
