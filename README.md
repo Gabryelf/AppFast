@@ -11,8 +11,8 @@
 **✨ Платформа для обмена и сохранения полезных сниппетов кода**
 
 [![Live Demo](https://img.shields.io/badge/🎯_Live_Demo-Click_Here-8A2BE2?style=for-the-badge&logo=vercel)](https://appfast-3.onrender.com)
-[![Documentation](https://img.shields.io/badge/📚_Документация-Wiki-blue?style=for-the-badge)](https://github.com/yourusername/code-snippets/wiki)
-[![Issues](https://img.shields.io/github/issues/yourusername/code-snippets?color=red&style=for-the-badge)](https://github.com/yourusername/code-snippets/issues)
+[![Documentation](https://img.shields.io/badge/📚_Документация-Wiki-blue?style=for-the-badge)](https://github.com/Gabryelf/code-snippets/wiki)
+[![Issues](https://img.shields.io/github/issues/Gabryelf/code-snippets?color=red&style=for-the-badge)](https://github.com/Gabryelf/code-snippets/issues)
 
 </div>
 
