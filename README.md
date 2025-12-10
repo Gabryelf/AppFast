@@ -93,13 +93,13 @@ uvicorn app.main:app --reload
 ```
 code-snippets/
 ├── 📁 app/                 # Основная логика
-│   ├── 🎯 main.py         # Точка входа
-│   ├── 🗄️ database.py    # Модели БД
-│   ├── 🔐 auth.py        # Аутентификация
-│   └── 🚦 handlers.py    # Маршруты API
-├── 📁 templates/          # HTML шаблоны
-├── 📁 static/            # CSS/JS файлы
-└── 📄 requirements.txt   # Зависимости
+│   ├── 🎯 main.py          # Точка входа
+│   ├── 🗄️ database.py      # Модели БД
+│   ├── 🔐 auth.py          # Аутентификация
+│   └── 🚦 handlers.py       # Маршруты API
+├── 📁 templates/           # HTML шаблоны
+├── 📁 static/             # CSS/JS файлы
+└── 📄 requirements.txt    # Зависимости
 ```
 
 ## 🎮 **Как использовать**
@@ -151,10 +151,22 @@ code-snippets/
 <div align="center">
 
 ### 📱 **Главная страница**
-![Главная страница](https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300&q=80)
+![Главная страница](screens/2025-12-10_16-29-51.png)
 
-### 💾 **Панель сниппетов**
-![Панель сниппетов](https://images.unsplash.com/photo-1516116216624-53e697fedbea?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300&q=80)
+### 💾 **Авторизация**
+![Панель сниппетов](screens/2025-12-10_16-30-38.png)
+
+### 👤 **Регистрация**
+![Панель сниппетов](screens/2025-12-10_16-30-18.png)
+
+### 📈 **Кабинет пользователя**
+![Панель сниппетов](screens/2025-12-10_16-30-55.png)
+
+### 📁 **Панель сниппетов**
+![Панель сниппетов](screens/2025-12-10_16-39-46.png)
+
+### 📄 **Заполнение заметок**
+![Панель сниппетов](screens/2025-12-10_16-40-09.png)
 
 </div>
 
@@ -173,62 +185,22 @@ code-snippets/
 
 </div>
 
-## 📈 **Статистика проекта**
-
-```python
-# Пример статистики
-features = {
-    "users_registered": "1000+",
-    "snippets_shared": "5000+",
-    "likes_given": "20000+",
-    "uptime": "99.9%",
-    "response_time": "< 100ms"
-}
-```
-
 ## 🤝 **Вклад в проект**
 
 Мы ❤️ open-source! Хотите помочь?
 
-1. 🐛 **Сообщите о баге** - [Создать Issue](https://github.com/yourusername/code-snippets/issues)
-2. 💡 **Предложите фичу** - [Feature Request](https://github.com/yourusername/code-snippets/issues/new?template=feature_request.md)
+1. 🐛 **Сообщите о баге** - [Создать Issue](https://github.com/Gabrielf/code-snippets/issues)
+2. 💡 **Предложите фичу** - [Feature Request](https://github.com/Gabryelf/code-snippets/issues/new?template=feature_request.md)
 3. 🔧 **Исправьте баг** - Fork и Pull Request
 4. 📚 **Улучшите документацию** - Помогите другим разработчикам
-
-### 🏆 **Стиль кода**
-```python
-# Хорошо
-def create_snippet(title: str, code: str) -> Snippet:
-    """Создает новый сниппет."""
-    return Snippet(title=title, code=code)
-
-# Плохо
-def make_snippet(t, c):
-    return Snippet(t, c)
-```
 
 ## 📚 **Документация**
 
 ### 📖 **Полное руководство**
-- [🚀 Начало работы](https://github.com/yourusername/code-snippets/wiki/Getting-Started)
-- [🗄️ Настройка БД](https://github.com/yourusername/code-snippets/wiki/Database-Setup)
-- [🔐 Аутентификация](https://github.com/yourusername/code-snippets/wiki/Authentication)
-- [☁️ Деплой](https://github.com/yourusername/code-snippets/wiki/Deployment)
-
-### 🎥 **Видео-туториалы**
-- [🎬 Установка за 5 минут](https://youtube.com/ваше_видео)
-- [⚡ Быстрый старт API](https://youtube.com/ваше_видео_2)
-
-## 🛡️ **Безопасность**
-
-**⚠️ Ответственное раскрытие уязвимостей**
-
-Если вы обнаружили уязвимость безопасности, пожалуйста:
-1. **Не создавайте публичный issue**
-2. **Напишите на security@example.com**
-3. **Опишите проблему подробно**
-
-Мы ответим в течение 48 часов и исправим как можно скорее.
+- [🚀 Начало работы](https://github.com/Gabryelf/code-snippets/wiki/Getting-Started)
+- [🗄️ Настройка БД](https://github.com/Gabryelf/code-snippets/wiki/Database-Setup)
+- [🔐 Аутентификация](https://github.com/Gabryelf/code-snippets/wiki/Authentication)
+- [☁️ Деплой](https://github.com/Gabryelf/code-snippets/wiki/Deployment)
 
 ## 📄 **Лицензия**
 
@@ -237,7 +209,7 @@ def make_snippet(t, c):
 ```
 MIT License
 
-Copyright (c) 2024 Ваше Имя
+Copyright (c) 2024 Gabryelf
 
 Разрешается свободное использование, копирование, изменение, объединение, публикация,
 распространение, сублицензирование и/или продажа копий программного обеспечения...
@@ -247,9 +219,9 @@ Copyright (c) 2024 Ваше Имя
 
 <div align="center">
 
-| ![Avatar](https://avatars.githubusercontent.com/u/ваш_id?v=4) | ![Avatar](https://avatars.githubusercontent.com/u/ваш_id2?v=4) |
+| ![Avatar](https://avatars.githubusercontent.com/u/Gabryelf?v=4) | ![Avatar](https://avatars.githubusercontent.com/u/PROJECTSLV2?v=4) |
 |:---:|:---:|
-| **Ваше Имя**<br>👑 Главный разработчик | **Соавтор**<br>🎨 Дизайнер |
+| **Gabryelf**<br>👑 Главный разработчик | **PROJECTSLV**<br>🎨 Дизайнер |
 
 </div>
 
@@ -261,10 +233,10 @@ Copyright (c) 2024 Ваше Имя
 
 ### 📊 **Достижения**
 
-![GitHub Stars](https://img.shields.io/github/stars/yourusername/code-snippets?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/yourusername/code-snippets?style=social)
-![GitHub Issues](https://img.shields.io/github/issues/yourusername/code-snippets)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/yourusername/code-snippets)
+![GitHub Stars](https://img.shields.io/github/stars/Gabryelf/code-snippets?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/Gabryelf/code-snippets?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/Gabryelf/code-snippets)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/Gabryelf/code-snippets)
 
 </div>
 
@@ -275,9 +247,9 @@ Copyright (c) 2024 Ваше Имя
 ## 🚀 **Начните прямо сейчас!**
 
 [![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
-[![Run on Replit](https://replit.com/badge/github/yourusername/code-snippets)](https://replit.com/github/yourusername/code-snippets)
+[![Run on Replit](https://replit.com/badge/github/yourusername/code-snippets)](https://replit.com/github/Gabryelf/code-snippets)
 
-**Вопросы?** Создайте [Issue](https://github.com/yourusername/code-snippets/issues) или присоединяйтесь к обсуждению!
+**Вопросы?** Создайте [Issue](https://github.com/Gabryelf/code-snippets/issues) или присоединяйтесь к обсуждению!
 
 </div>
 
@@ -287,7 +259,7 @@ Copyright (c) 2024 Ваше Имя
 
 **Сделано с ❤️ для сообщества разработчиков**
 
-[🌐 Веб-сайт](https://ваш-сайт.com) • [🐦 Twitter](https://twitter.com/ваш_twitter) • [💼 LinkedIn](https://linkedin.com/in/ваш-linkedin)
+[🌐 Веб-сайт]((https://gabryelf.github.io/resume_2025/)) • [🐦 VK]((https://vk.com/id168958246))
 
 © 2024 Code Snippets Hub. Все права защищены.
 
@@ -318,7 +290,7 @@ Copyright (c) 2024 Ваше Имя
 ![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
 ![Maintenance](https://img.shields.io/maintenance/yes/2024)
 
-**Последнее обновление:** Декабрь 2024
+**Последнее обновление:** Декабрь 2025
 
 </div>
 
@@ -365,8 +337,7 @@ bandit -r app/
 
 ## 🌈 **Присоединяйтесь к сообществу!**
 
-[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/ваш-сервер)
-[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/ваш-канал)
+[![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/MyWayGameDeva)
 
 **💬 Обсуждайте, делитесь, обучайтесь вместе!**
 
