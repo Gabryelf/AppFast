@@ -1,19 +1,18 @@
-import json
-from fastapi import APIRouter, Depends, HTTPException, Request, Header
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from app.forms import UserForm, UserCreateForm, ItemCreateForm, ItemUpdateForm
-from app.models import connect_db, User, AuthToken, Item
+from app.forms import UserForm, UserCreateForm, SnippetCreateForm, SnippetUpdateForm
+from app.database import connect_db, User, AuthToken, Snippet, Like
 from app.utils import get_password_hash
 from app.auth import check_auth_token
-
 from app.config import TEMPLATES_DIR
 
 router = APIRouter()
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
+# Страницы
 @router.get("/", response_class=HTMLResponse)
 async def get_home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
@@ -34,31 +33,37 @@ async def get_dashboard_page(request: Request):
     return templates.TemplateResponse("dashboard.html", {"request": request})
 
 
-@router.get("/items", response_class=HTMLResponse)
-async def get_items_page(request: Request):
-    return templates.TemplateResponse("items.html", {"request": request})
+@router.get("/snippets", response_class=HTMLResponse)
+async def get_snippets_page(request: Request):
+    return templates.TemplateResponse("snippets.html", {"request": request})
+
+
+@router.get("/my-snippets", response_class=HTMLResponse)
+async def get_my_snippets_page(request: Request):
+    return templates.TemplateResponse("my_snippets.html", {"request": request})
+
+
+@router.get("/create-snippet", response_class=HTMLResponse)
+async def create_snippet_page(request: Request):
+    return templates.TemplateResponse("create_snippet.html", {"request": request})
 
 
 # Аутентификация
 @router.post('/login')
-def login(user_form: UserForm, database=Depends(connect_db)):
-    user = database.query(User).filter(User.email == user_form.email).first()
+def login(user_form: UserForm, db=Depends(connect_db)):
+    user = db.query(User).filter(User.email == user_form.email).first()
     if not user or get_password_hash(user_form.password) != user.password:
-        return {'error': 'user or password invalid'}
+        return {'error': 'Invalid email or password'}
 
-    auth_token = AuthToken(
-        token=AuthToken.generate_token(),
-        user_id=user.id
-    )
-    database.add(auth_token)
-    database.commit()
-    return {'token': auth_token.token}
+    auth_token = AuthToken(token=AuthToken.generate_token(), user_id=user.id)
+    db.add(auth_token)
+    db.commit()
+    return {'token': auth_token.token, 'user_id': user.id}
 
 
-@router.post('/user', name='user:create')
-def create_user(user: UserCreateForm, database=Depends(connect_db)):
-    exists_user = database.query(User.id).filter(User.email == user.email).first()
-    if exists_user:
+@router.post('/register')
+def register(user: UserCreateForm, db=Depends(connect_db)):
+    if db.query(User.id).filter(User.email == user.email).first():
         raise HTTPException(status_code=400, detail='Email already exists')
 
     new_user = User(
@@ -68,14 +73,14 @@ def create_user(user: UserCreateForm, database=Depends(connect_db)):
         last_name=user.last_name,
         nick_name=user.nick_name
     )
-    database.add(new_user)
-    database.commit()
-    return {'user_id': new_user.id}
+    db.add(new_user)
+    db.commit()
+    return {'user_id': new_user.id, 'message': 'User created successfully'}
 
 
-@router.get('/user', name='user:get')
-def get_user(auth_token: AuthToken = Depends(check_auth_token), database=Depends(connect_db)):
-    user = database.query(User).filter(User.id == auth_token.user_id).first()
+@router.get('/user')
+def get_user(auth_token: AuthToken = Depends(check_auth_token), db=Depends(connect_db)):
+    user = db.query(User).filter(User.id == auth_token.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail='User not found')
 
@@ -84,168 +89,223 @@ def get_user(auth_token: AuthToken = Depends(check_auth_token), database=Depends
         'email': user.email,
         'nick_name': user.nick_name,
         'first_name': user.first_name,
-        'last_name': user.last_name
+        'last_name': user.last_name,
+        'created_at': user.created_at
     }
 
 
-@router.post('/logout', name='user:logout')
-def logout(authorization: str = Header(None), database=Depends(connect_db)):
+@router.post('/logout')
+def logout(authorization: str = None, db=Depends(connect_db)):
     if authorization and authorization.startswith('Bearer '):
         token = authorization.replace('Bearer ', '')
-        auth_token = database.query(AuthToken).filter(AuthToken.token == token).first()
+        auth_token = db.query(AuthToken).filter(AuthToken.token == token).first()
         if auth_token:
-            database.delete(auth_token)
-            database.commit()
+            db.delete(auth_token)
+            db.commit()
+    return {'message': 'Logged out'}
 
-    return {'message': 'Logged out successfully'}
 
-
-# Item CRUD операции
-@router.post('/items', name='item:create')
-def create_item(
-        item: ItemCreateForm,
+# Управление сниппетами
+@router.post('/snippets')
+def create_snippet(
+        snippet: SnippetCreateForm,
         auth_token: AuthToken = Depends(check_auth_token),
-        database=Depends(connect_db)
+        db=Depends(connect_db)
 ):
-    new_item = Item(
+    new_snippet = Snippet(
         user_id=auth_token.user_id,
-        title=item.title,
-        description=item.description,
-        cover_image=item.cover_image,
-        images=json.dumps(item.images or []) if item.images else None
+        title=snippet.title,
+        code=snippet.code,
+        description=snippet.description
     )
-    database.add(new_item)
-    database.commit()
-    database.refresh(new_item)
+    db.add(new_snippet)
+    db.commit()
+    db.refresh(new_snippet)
 
     return {
-        'id': new_item.id,
-        'title': new_item.title,
-        'description': new_item.description,
-        'cover_image': new_item.cover_image,
-        'images': json.loads(new_item.images) if new_item.images else []
+        'id': new_snippet.id,
+        'title': new_snippet.title,
+        'code': new_snippet.code,
+        'description': new_snippet.description,
+        'created_at': new_snippet.created_at,
+        'like_count': 0
     }
 
 
-@router.get('/items', name='item:list')
-def list_items(database=Depends(connect_db), limit: int = 50, offset: int = 0):
-    items = database.query(Item).order_by(Item.created_at.desc()).limit(limit).offset(offset).all()
+@router.get('/snippets')
+def list_snippets(db=Depends(connect_db), limit: int = 50, offset: int = 0):
+    snippets = db.query(Snippet).order_by(Snippet.created_at.desc()).limit(limit).offset(offset).all()
 
     result = []
-    for item in items:
-        user = database.query(User).filter(User.id == item.user_id).first()
+    for snippet in snippets:
+        user = db.query(User).filter(User.id == snippet.user_id).first()
+        like_count = db.query(Like).filter(Like.snippet_id == snippet.id).count()
+
         result.append({
-            'id': item.id,
-            'title': item.title,
-            'description': item.description,
-            'cover_image': item.cover_image,
-            'images': json.loads(item.images) if item.images else [],
-            'created_at': item.created_at,
+            'id': snippet.id,
+            'title': snippet.title,
+            'code': snippet.code[:100] + '...' if len(snippet.code) > 100 else snippet.code,
+            'description': snippet.description,
+            'created_at': snippet.created_at,
+            'like_count': like_count,
             'author': {
-                'id': user.id,
-                'nick_name': user.nick_name,
-                'email': user.email
-            } if user else None
+                'id': user.id if user else None,
+                'nick_name': user.nick_name if user else 'Unknown',
+                'email': user.email if user else 'unknown@example.com'
+            }
         })
 
-    return {'items': result, 'count': len(result)}
+    return {'snippets': result, 'count': len(result)}
 
 
-@router.get('/items/my', name='item:my')
-def my_items(
-        auth_token: AuthToken = Depends(check_auth_token),
-        database=Depends(connect_db)
-):
-    items = database.query(Item).filter(Item.user_id == auth_token.user_id).order_by(Item.created_at.desc()).all()
+@router.get('/snippets/my')
+def my_snippets(auth_token: AuthToken = Depends(check_auth_token), db=Depends(connect_db)):
+    snippets = db.query(Snippet).filter(
+        Snippet.user_id == auth_token.user_id
+    ).order_by(Snippet.created_at.desc()).all()
 
     result = []
-    for item in items:
+    for snippet in snippets:
+        like_count = db.query(Like).filter(Like.snippet_id == snippet.id).count()
         result.append({
-            'id': item.id,
-            'title': item.title,
-            'description': item.description,
-            'cover_image': item.cover_image,
-            'images': json.loads(item.images) if item.images else [],
-            'created_at': item.created_at
+            'id': snippet.id,
+            'title': snippet.title,
+            'code': snippet.code,
+            'description': snippet.description,
+            'created_at': snippet.created_at,
+            'like_count': like_count
         })
 
-    return {'items': result}
+    return {'snippets': result}
 
 
-@router.get('/items/{item_id}', name='item:get')
-def get_item(item_id: int, database=Depends(connect_db)):
-    item = database.query(Item).filter(Item.id == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail='Item not found')
+@router.get('/snippets/{snippet_id}')
+def get_snippet(snippet_id: int, db=Depends(connect_db)):
+    snippet = db.query(Snippet).filter(Snippet.id == snippet_id).first()
+    if not snippet:
+        raise HTTPException(status_code=404, detail='Snippet not found')
 
-    user = database.query(User).filter(User.id == item.user_id).first()
+    user = db.query(User).filter(User.id == snippet.user_id).first()
+    like_count = db.query(Like).filter(Like.snippet_id == snippet_id).count()
 
     return {
-        'id': item.id,
-        'title': item.title,
-        'description': item.description,
-        'cover_image': item.cover_image,
-        'images': json.loads(item.images) if item.images else [],
-        'created_at': item.created_at,
+        'id': snippet.id,
+        'title': snippet.title,
+        'code': snippet.code,
+        'description': snippet.description,
+        'created_at': snippet.created_at,
+        'like_count': like_count,
         'author': {
-            'id': user.id,
-            'nick_name': user.nick_name,
-            'email': user.email
-        } if user else None
+            'id': user.id if user else None,
+            'nick_name': user.nick_name if user else 'Unknown',
+            'email': user.email if user else 'unknown@example.com'
+        }
     }
 
 
-@router.put('/items/{item_id}', name='item:update')
-def update_item(
-        item_id: int,
-        item_update: ItemUpdateForm,
+@router.put('/snippets/{snippet_id}')
+def update_snippet(
+        snippet_id: int,
+        snippet_update: SnippetUpdateForm,
         auth_token: AuthToken = Depends(check_auth_token),
-        database=Depends(connect_db)
+        db=Depends(connect_db)
 ):
-    item = database.query(Item).filter(
-        Item.id == item_id,
-        Item.user_id == auth_token.user_id
+    snippet = db.query(Snippet).filter(
+        Snippet.id == snippet_id,
+        Snippet.user_id == auth_token.user_id
     ).first()
 
-    if not item:
-        raise HTTPException(status_code=404, detail='Item not found or access denied')
+    if not snippet:
+        raise HTTPException(status_code=404, detail='Snippet not found or access denied')
 
-    if item_update.title is not None:
-        item.title = item_update.title
-    if item_update.description is not None:
-        item.description = item_update.description
-    if item_update.cover_image is not None:
-        item.cover_image = item_update.cover_image
-    if item_update.images is not None:
-        item.images = json.dumps(item_update.images)
+    if snippet_update.title is not None:
+        snippet.title = snippet_update.title
+    if snippet_update.code is not None:
+        snippet.code = snippet_update.code
+    if snippet_update.description is not None:
+        snippet.description = snippet_update.description
 
-    database.commit()
-    database.refresh(item)
+    db.commit()
+    db.refresh(snippet)
+
+    like_count = db.query(Like).filter(Like.snippet_id == snippet_id).count()
 
     return {
-        'id': item.id,
-        'title': item.title,
-        'description': item.description,
-        'cover_image': item.cover_image,
-        'images': json.loads(item.images) if item.images else []
+        'id': snippet.id,
+        'title': snippet.title,
+        'code': snippet.code,
+        'description': snippet.description,
+        'created_at': snippet.created_at,
+        'like_count': like_count
     }
 
 
-@router.delete('/items/{item_id}', name='item:delete')
-def delete_item(
-        item_id: int,
+@router.delete('/snippets/{snippet_id}')
+def delete_snippet(
+        snippet_id: int,
         auth_token: AuthToken = Depends(check_auth_token),
-        database=Depends(connect_db)
+        db=Depends(connect_db)
 ):
-    item = database.query(Item).filter(
-        Item.id == item_id,
-        Item.user_id == auth_token.user_id
+    snippet = db.query(Snippet).filter(
+        Snippet.id == snippet_id,
+        Snippet.user_id == auth_token.user_id
     ).first()
 
-    if not item:
-        raise HTTPException(status_code=404, detail='Item not found or access denied')
+    if not snippet:
+        raise HTTPException(status_code=404, detail='Snippet not found or access denied')
 
-    database.delete(item)
-    database.commit()
+    # Удаляем все лайки для этого сниппета
+    db.query(Like).filter(Like.snippet_id == snippet_id).delete()
 
-    return {'message': 'Item deleted successfully'}
+    db.delete(snippet)
+    db.commit()
+
+    return {'message': 'Snippet deleted successfully'}
+
+
+# Лайки
+@router.post('/snippets/{snippet_id}/like')
+def like_snippet(
+        snippet_id: int,
+        auth_token: AuthToken = Depends(check_auth_token),
+        db=Depends(connect_db)
+):
+    snippet = db.query(Snippet).filter(Snippet.id == snippet_id).first()
+    if not snippet:
+        raise HTTPException(status_code=404, detail='Snippet not found')
+
+    # Проверяем, не лайкал ли уже пользователь
+    existing_like = db.query(Like).filter(
+        Like.snippet_id == snippet_id,
+        Like.user_id == auth_token.user_id
+    ).first()
+
+    if existing_like:
+        db.delete(existing_like)
+        db.commit()
+        return {'liked': False, 'message': 'Like removed'}
+
+    new_like = Like(snippet_id=snippet_id, user_id=auth_token.user_id)
+    db.add(new_like)
+    db.commit()
+
+    return {'liked': True, 'message': 'Snippet liked'}
+
+
+@router.get('/snippets/{snippet_id}/likes')
+def get_snippet_likes(snippet_id: int, db=Depends(connect_db)):
+    likes = db.query(Like).filter(Like.snippet_id == snippet_id).all()
+
+    result = []
+    for like in likes:
+        user = db.query(User).filter(User.id == like.user_id).first()
+        result.append({
+            'id': like.id,
+            'user': {
+                'id': user.id if user else None,
+                'nick_name': user.nick_name if user else 'Unknown'
+            },
+            'created_at': like.created_at
+        })
+
+    return {'likes': result, 'count': len(result)}

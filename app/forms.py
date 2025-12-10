@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 
 
 class UserForm(BaseModel):
@@ -15,15 +15,13 @@ class UserCreateForm(BaseModel):
     nick_name: Optional[str] = None
 
 
-class ItemCreateForm(BaseModel):
+class SnippetCreateForm(BaseModel):
     title: str
+    code: str
     description: Optional[str] = None
-    cover_image: Optional[str] = None
-    images: Optional[List[str]] = None
 
 
-class ItemUpdateForm(BaseModel):
+class SnippetUpdateForm(BaseModel):
     title: Optional[str] = None
+    code: Optional[str] = None
     description: Optional[str] = None
-    cover_image: Optional[str] = None
-    images: Optional[List[str]] = None
