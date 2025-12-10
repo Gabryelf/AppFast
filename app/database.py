@@ -1,5 +1,5 @@
 import os
-from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, Boolean
+from sqlalchemy import create_engine, Column, Integer, String, Text, ForeignKey, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime
@@ -9,16 +9,23 @@ from dotenv import load_dotenv
 load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://postgres:password@localhost:5432/code_snippets')
 
+# ВАЖНО: Используем DATABASE_URL из переменных окружения
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+# Если DATABASE_URL не установлен, используем локальную базу (только для разработки)
+if not DATABASE_URL:
+    DATABASE_URL = 'postgresql://postgres:password@localhost:5432/code_snippets'
+
+# Исправляем postgres:// на postgresql:// (для совместимости)
 if DATABASE_URL.startswith('postgres://'):
     DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+
+print(f"📊 Database URL: {DATABASE_URL[:60]}...")  # Печатаем только начало
 
 # Конфигурация папок
 STATIC_DIR = os.path.join(BASE_DIR, 'static')
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
-
-print(f"📊 Database URL: {DATABASE_URL[:50]}...")
 
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
@@ -37,6 +44,18 @@ def create_tables():
     try:
         Base.metadata.create_all(bind=engine)
         print("✅ Database tables created successfully")
+
+        # Проверяем, что таблицы созданы
+        with engine.connect() as conn:
+            result = conn.execute(text("""
+                SELECT table_name 
+                FROM information_schema.tables 
+                WHERE table_schema = 'public'
+                ORDER BY table_name
+            """))
+            tables = [row[0] for row in result]
+            print(f"📋 Available tables: {', '.join(tables)}")
+
     except Exception as e:
         print(f"❌ Error creating tables: {e}")
 
