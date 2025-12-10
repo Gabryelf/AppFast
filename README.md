@@ -268,7 +268,7 @@ Copyright (c) 2024 Gabryelf
 
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Gabryelf/AppFast/ci.yml)
 ![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
-![Maintenance](https://img.shields.io/maintenance/yes/2024)
+![Maintenance](https://img.shields.io/maintenance/yes/2025)
 
 **Последнее обновление:** Декабрь 2025
 
