@@ -2,4 +2,4 @@ from app.database import create_tables
 
 if __name__ == '__main__':
     create_tables()
-    print("✅ Database setup completed!")
+    print("___Database setup completed!___")

@@ -48,7 +48,6 @@ async def create_snippet_page(request: Request):
     return templates.TemplateResponse("create_snippet.html", {"request": request})
 
 
-# Аутентификация
 @router.post('/login')
 def login(user_form: UserForm, db=Depends(connect_db)):
     user = db.query(User).filter(User.email == user_form.email).first()
@@ -105,7 +104,6 @@ def logout(authorization: str = None, db=Depends(connect_db)):
     return {'message': 'Logged out'}
 
 
-# Управление сниппетами
 @router.post('/snippets')
 def create_snippet(
         snippet: SnippetCreateForm,
@@ -254,7 +252,6 @@ def delete_snippet(
     if not snippet:
         raise HTTPException(status_code=404, detail='Snippet not found or access denied')
 
-    # Удаляем все лайки для этого сниппета
     db.query(Like).filter(Like.snippet_id == snippet_id).delete()
 
     db.delete(snippet)
@@ -263,7 +260,6 @@ def delete_snippet(
     return {'message': 'Snippet deleted successfully'}
 
 
-# Лайки
 @router.post('/snippets/{snippet_id}/like')
 def like_snippet(
         snippet_id: int,
@@ -274,7 +270,6 @@ def like_snippet(
     if not snippet:
         raise HTTPException(status_code=404, detail='Snippet not found')
 
-    # Проверяем, не лайкал ли уже пользователь
     existing_like = db.query(Like).filter(
         Like.snippet_id == snippet_id,
         Like.user_id == auth_token.user_id
