@@ -68,7 +68,7 @@
 
 ```bash
 # 1. Клонируйте репозиторий
-git clone https://github.com/yourusername/code-snippets.git
+git clone https://github.com/yourusername/AppFast.git
 cd code-snippets
 
 # 2. Создайте виртуальное окружение
@@ -91,7 +91,7 @@ uvicorn app.main:app --reload
 ## 📁 **Структура проекта**
 
 ```
-code-snippets/
+AppFast/
 ├── 📁 app/                 # Основная логика
 │   ├── 🎯 main.py          # Точка входа
 │   ├── 🗄️ database.py      # Модели БД
@@ -189,18 +189,18 @@ code-snippets/
 
 Мы ❤️ open-source! Хотите помочь?
 
-1. 🐛 **Сообщите о баге** - [Создать Issue](https://github.com/Gabrielf/code-snippets/issues)
-2. 💡 **Предложите фичу** - [Feature Request](https://github.com/Gabryelf/code-snippets/issues/new?template=feature_request.md)
+1. 🐛 **Сообщите о баге** - [Создать Issue](https://github.com/Gabrielf/AppFast/issues)
+2. 💡 **Предложите фичу** - [Feature Request](https://github.com/Gabryelf/AppFast/issues/new?template=feature_request.md)
 3. 🔧 **Исправьте баг** - Fork и Pull Request
 4. 📚 **Улучшите документацию** - Помогите другим разработчикам
 
 ## 📚 **Документация**
 
 ### 📖 **Полное руководство**
-- [🚀 Начало работы](https://github.com/Gabryelf/code-snippets/wiki/Getting-Started)
-- [🗄️ Настройка БД](https://github.com/Gabryelf/code-snippets/wiki/Database-Setup)
-- [🔐 Аутентификация](https://github.com/Gabryelf/code-snippets/wiki/Authentication)
-- [☁️ Деплой](https://github.com/Gabryelf/code-snippets/wiki/Deployment)
+- [🚀 Начало работы](https://github.com/Gabryelf/AppFast/wiki/Getting-Started)
+- [🗄️ Настройка БД](https://github.com/Gabryelf/AppFast/wiki/Database-Setup)
+- [🔐 Аутентификация](https://github.com/Gabryelf/AppFast/wiki/Authentication)
+- [☁️ Деплой](https://github.com/Gabryelf/AppFast/wiki/Deployment)
 
 ## 📄 **Лицензия**
 
@@ -233,10 +233,10 @@ Copyright (c) 2024 Gabryelf
 
 ### 📊 **Достижения**
 
-![GitHub Stars](https://img.shields.io/github/stars/Gabryelf/code-snippets?style=social)
-![GitHub Forks](https://img.shields.io/github/forks/Gabryelf/code-snippets?style=social)
-![GitHub Issues](https://img.shields.io/github/issues/Gabryelf/code-snippets)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/Gabryelf/code-snippets)
+![GitHub Stars](https://img.shields.io/github/stars/Gabryelf/AppFast?style=social)
+![GitHub Forks](https://img.shields.io/github/forks/Gabryelf/AppFast?style=social)
+![GitHub Issues](https://img.shields.io/github/issues/Gabryelf/AppFast)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/Gabryelf/AppFast)
 
 </div>
 
@@ -247,9 +247,9 @@ Copyright (c) 2024 Gabryelf
 ## 🚀 **Начните прямо сейчас!**
 
 [![Deploy on Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
-[![Run on Replit](https://replit.com/badge/github/yourusername/code-snippets)](https://replit.com/github/Gabryelf/code-snippets)
+[![Run on Replit](https://replit.com/badge/github/Gabryelf/AppFast)](https://replit.com/github/Gabryelf/AppFast)
 
-**Вопросы?** Создайте [Issue](https://github.com/Gabryelf/code-snippets/issues) или присоединяйтесь к обсуждению!
+**Вопросы?** Создайте [Issue](https://github.com/Gabryelf/AppFast/issues) или присоединяйтесь к обсуждению!
 
 </div>
 
@@ -286,7 +286,7 @@ Copyright (c) 2024 Gabryelf
 
 ### 🎯 **Статус проекта**
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/yourusername/code-snippets/ci.yml)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Gabryelf/AppFast/ci.yml)
 ![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
 ![Maintenance](https://img.shields.io/maintenance/yes/2024)
 
