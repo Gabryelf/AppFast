@@ -12,7 +12,7 @@
 
 [![Live Demo](https://img.shields.io/badge/🎯_Live_Demo-Click_Here-8A2BE2?style=for-the-badge&logo=vercel)](https://appfast-3.onrender.com)
 [![Documentation](https://img.shields.io/badge/📚_Документация-Wiki-blue?style=for-the-badge)](https://github.com/Gabryelf/AppFast/wiki)
-[![Issues](https://img.shields.io/github/issues/Gabryelf/code-snippets?color=red&style=for-the-badge)](https://github.com/Gabryelf/AppFast/issues)
+[![Issues](https://img.shields.io/github/issues/Gabryelf/AppFast?color=red&style=for-the-badge)](https://github.com/Gabryelf/AppFast/issues)
 
 </div>
 
@@ -68,7 +68,7 @@
 
 ```bash
 # 1. Клонируйте репозиторий
-git clone https://github.com/yourusername/AppFast.git
+git clone https://github.com/Gabryelf/AppFast.git
 cd code-snippets
 
 # 2. Создайте виртуальное окружение
