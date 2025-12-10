@@ -1,4 +1,4 @@
-# 🚀 Code Snippets Hub
+#  Code Snippets Hub
 
 <div align="center">
 
