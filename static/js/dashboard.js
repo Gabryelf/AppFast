@@ -1,82 +1,66 @@
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Dashboard page loaded');
-
-    // Проверяем наличие токена
-    const token = localStorage.getItem('auth_token');
-    const tokenInfo = document.getElementById('token-info');
-
-    if (token) {
-        tokenInfo.textContent = token.substring(0, 30) + '...';
-        // Загружаем информацию о пользователе
-        loadUserInfo();
-    } else {
-        document.getElementById('error-message').style.display = 'block';
-        document.getElementById('error-message').textContent = 'You are not logged in. Please login first.';
-        document.getElementById('user-info').innerHTML = '<p><a href="/login">Go to Login</a></p>';
-    }
+    checkAuthAndLoadUser();
 });
 
-async function loadUserInfo() {
+async function checkAuthAndLoadUser() {
     const token = localStorage.getItem('auth_token');
-    const userInfoDiv = document.getElementById('user-info');
-    const errorMessage = document.getElementById('error-message');
 
     if (!token) {
-        errorMessage.style.display = 'block';
-        errorMessage.textContent = 'No authentication token found';
+        window.location.href = '/login';
         return;
     }
 
     try {
         const response = await fetch('/user', {
-            method: 'GET',
             headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+                'Authorization': `Bearer ${token}`
             }
         });
 
         if (response.ok) {
-            const userData = await response.json();
-            errorMessage.style.display = 'none';
-
-            // Отображаем информацию о пользователе
-            userInfoDiv.innerHTML = `
-                <h3>User Information:</h3>
-                <p><strong>ID:</strong> ${userData.id}</p>
-                <p><strong>Email:</strong> ${userData.email}</p>
-                <p><strong>Nickname:</strong> ${userData.nick_name || 'Not set'}</p>
-                <p><strong>Full Name:</strong> ${userData.first_name || ''} ${userData.last_name || ''}</p>
-            `;
+            const user = await response.json();
+            displayUserInfo(user);
         } else {
-            const errorData = await response.json();
-            errorMessage.style.display = 'block';
-            errorMessage.textContent = `Error: ${errorData.detail || 'Failed to load user data'}`;
-            userInfoDiv.innerHTML = '<p><a href="/login">Go to Login</a></p>';
-
-            // Если ошибка аутентификации, очищаем токен
-            if (response.status === 403 || response.status === 401) {
-                localStorage.removeItem('auth_token');
-            }
+            localStorage.removeItem('auth_token');
+            window.location.href = '/login';
         }
     } catch (error) {
-        console.error('Error loading user info:', error);
-        errorMessage.style.display = 'block';
-        errorMessage.textContent = 'Network error: ' + error.message;
+        console.error('Error:', error);
+        showError('Network error');
     }
 }
 
+function displayUserInfo(user) {
+    const userInfoDiv = document.getElementById('user-info');
+    userInfoDiv.innerHTML = `
+        <div class="user-card">
+            <h3>👤 ${user.nick_name || user.email}</h3>
+            <p>Email: ${user.email}</p>
+            <p>Name: ${user.first_name || ''} ${user.last_name || ''}</p>
+            <p>Member since: ${new Date(user.created_at).toLocaleDateString()}</p>
+        </div>
+    `;
+}
+
 function logout() {
-    // Можно добавить запрос на сервер для инвалидации токена
-    // await fetch('/logout', { method: 'POST' });
+    const token = localStorage.getItem('auth_token');
+
+    if (token) {
+        fetch('/logout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).catch(console.error);
+    }
 
     localStorage.removeItem('auth_token');
     window.location.href = '/login';
 }
 
-function refreshUserInfo() {
-    loadUserInfo();
+function showError(message) {
+    const errorDiv = document.getElementById('error-message');
+    errorDiv.textContent = message;
+    errorDiv.className = 'error';
+    errorDiv.style.display = 'block';
 }
-
-// Автоматическое обновление каждые 30 секунд (опционально)
-setInterval(loadUserInfo, 30000);

@@ -1,45 +1,19 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            text-align: center;
-        }
-        .buttons {
-            margin: 20px 0;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 0 10px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .login-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-        }
-        .register-btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
-        }
-    </style>
+    <title>Code Snippets App</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h1>Welcome to Stream App</h1>
-    <p>Please login or register to continue</p>
+    <div class="container">
+        <h1>📝 Code Snippets App</h1>
+        <p>Save and share your code snippets with others!</p>
 
-    <div class="buttons">
-        <button class="login-btn" onclick="window.location.href='/login'">Login</button>
-        <button class="register-btn" onclick="window.location.href='/register'">Register</button>
+        <div class="buttons">
+            <a href="/login" class="btn btn-primary">Login</a>
+            <a href="/register" class="btn btn-secondary">Register</a>
+            <a href="/snippets" class="btn btn-info">Browse Snippets</a>
+        </div>
     </div>
 </body>
 </html>

@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>User Dashboard</title>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-    <h2>User Dashboard</h2>
+    <div class="container">
+        <h1>👋 Welcome to Dashboard</h1>
 
-    <div id="user-info">
-        <p>Loading user information...</p>
-    </div>
+        <div class="user-info" id="user-info">
+            Loading...
+        </div>
 
-    <div id="error-message" style="color: red; display: none;"></div>
+        <div class="actions">
+            <a href="/snippets" class="btn">Browse All Snippets</a>
+            <a href="/my-snippets" class="btn">My Snippets</a>
+            <a href="/create-snippet" class="btn btn-primary">Create New Snippet</a>
+            <button onclick="logout()" class="btn btn-danger">Logout</button>
+        </div>
 
-    <div>
-        <h3>Actions:</h3>
-        <button onclick="logout()">Logout</button>
-        <button onclick="refreshUserInfo()">Refresh</button>
-    </div>
-
-    <div>
-        <h3>Token:</h3>
-        <pre id="token-info">No token found</pre>
+        <div class="error" id="error-message"></div>
     </div>
 
     <script src="/static/js/dashboard.js"></script>
