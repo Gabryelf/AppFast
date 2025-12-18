@@ -10,7 +10,7 @@ from app.database import create_tables
 
 def get_app() -> FastAPI:
     application = FastAPI(title="Code Snippets App")
-    create_tables()
+    #create_tables()
     application.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     application.include_router(router)
     return application
